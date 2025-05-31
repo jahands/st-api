@@ -10,8 +10,8 @@ image = (
     modal.Image.debian_slim()
     .pip_install("uv")
     .workdir("/work")
-    .copy_local_file("pyproject.toml", "/work/pyproject.toml")
-    .copy_local_file("uv.lock", "/work/uv.lock")
+    .add_local_file("pyproject.toml", "/work/pyproject.toml", copy=True)
+    .add_local_file("uv.lock", "/work/uv.lock", copy=True)
     .env({"UV_PROJECT_ENVIRONMENT": "/usr/local"})
     .run_commands([
         "uv sync --frozen --compile-bytecode",
