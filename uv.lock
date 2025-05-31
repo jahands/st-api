@@ -1143,6 +1143,7 @@ name = "st-api"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "aiohttp" },
     { name = "fastapi", extra = ["standard"] },
     { name = "modal" },
     { name = "numpy" },
@@ -1155,6 +1156,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aiohttp", specifier = ">=3.9.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.100.0" },
     { name = "modal", specifier = ">=1.0.2" },
     { name = "numpy", specifier = ">=2.2.4" },

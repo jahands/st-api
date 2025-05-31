@@ -55,6 +55,7 @@ just railway-status        # Check deployment status
 │   ├── test-endpoints.sh  # API endpoint testing
 │   ├── health-check.sh    # Health check script
 │   ├── test_api.py        # API structure tests
+│   ├── loadtest.py        # Load testing script
 │   └── create_test_image.py # Test image generator
 ├── reference/             # Reference implementations
 │   └── eval_forest.py     # Original classification script
@@ -111,6 +112,14 @@ just test-api
 
 ```sh
 just test-endpoints
+```
+
+### Load Testing
+
+```sh
+just loadtest              # 1000 requests, 10 concurrency
+just loadtest-quick        # 100 requests, 5 concurrency
+just loadtest-intensive    # 5000 requests, 20 concurrency
 ```
 
 ## 🛠️ Development

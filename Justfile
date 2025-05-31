@@ -93,3 +93,29 @@ railway-logs:
 # Open Railway dashboard
 railway-dashboard:
   railway open
+
+# === Load Testing Commands ===
+
+# Run load test against production API (1000 requests, 10 concurrency)
+loadtest:
+  uv run python scripts/loadtest.py --url "https://st-api.geostyx.com/classify"
+
+# Run quick load test (100 requests, 5 concurrency)
+loadtest-quick:
+  uv run python scripts/loadtest.py --url "https://st-api.geostyx.com/classify" --requests 100 --concurrency 5
+
+# Run intensive load test (5000 requests, 20 concurrency)
+loadtest-intensive:
+  uv run python scripts/loadtest.py --url "https://st-api.geostyx.com/classify" --requests 5000 --concurrency 20
+
+# Load test local Railway API (requires docker-run-bg)
+loadtest-local:
+  uv run python scripts/loadtest.py --url "http://localhost:8000/classify" --requests 100 --concurrency 5
+
+# Load test with custom parameters
+loadtest-custom url requests="1000" concurrency="10":
+  uv run python scripts/loadtest.py --url "{{url}}" --requests {{requests}} --concurrency {{concurrency}}
+
+# Load test and save results with timestamp
+loadtest-save:
+  uv run python scripts/loadtest.py --url "https://st-api.geostyx.com/classify" --output "loadtest_$(date +%Y%m%d_%H%M%S).json"
