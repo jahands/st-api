@@ -1,16 +1,13 @@
 {
+  "$schema": "https://railway.com/railway.schema.json",
   "build": {
-    "builder": "dockerfile",
+    "builder": "DOCKERFILE",
     "dockerfilePath": "Dockerfile"
   },
   "deploy": {
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300,
-    "restartPolicyType": "on_failure",
+    "restartPolicyType": "ALWAYS",
     "restartPolicyMaxRetries": 3
-  },
-  "env": {
-    "PORT": "8000",
-    "PYTHONPATH": "/app"
   }
 }
