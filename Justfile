@@ -4,10 +4,6 @@ set shell := ["bash", "-c"]
 @help:
   just --list
 
-# Run the original local entrypoint
-start:
-  uv run src/main.py
-
 # Deploy the API to Modal (production)
 deploy:
   uv run modal deploy src/main.py
