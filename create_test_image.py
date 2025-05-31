@@ -41,7 +41,8 @@ def create_test_image():
     
     # Draw the text in a color that should be detected by the filter
     # Using a color within the range (160, 154, 157) to (255, 255, 255)
-    text_color = (180, 180, 180)  # Light gray
+    # This matches the color range used in eval_forest.py
+    text_color = (200, 200, 200)  # Light gray that should be detected
     
     if font:
         draw.text((x, y), text, fill=text_color, font=font)

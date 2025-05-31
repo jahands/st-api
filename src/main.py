@@ -7,13 +7,15 @@ from PIL import Image
 import io
 from datetime import datetime, timezone
 
-# Create Modal app with uv-managed dependencies
+# Create Modal app with uv-managed dependencies and model files
 image = (
     modal.Image.debian_slim()
     .pip_install("uv")
     .workdir("/work")
     .add_local_file("pyproject.toml", "/work/pyproject.toml", copy=True)
     .add_local_file("uv.lock", "/work/uv.lock", copy=True)
+    .add_local_file("decision_forest.pkl", "/work/decision_forest.pkl", copy=True)
+    .add_local_file("image_manipulate_utils.py", "/work/image_manipulate_utils.py", copy=True)
     .env({"UV_PROJECT_ENVIRONMENT": "/usr/local"})
     .run_commands([
         "uv sync --frozen --compile-bytecode",
@@ -125,6 +127,8 @@ async def classify_text_in_image(image: Image.Image) -> tuple[str, float, int]:
     """
     Extract and classify text from an image using the Random Forest model.
 
+    This implementation follows the exact logic from eval_forest.py
+
     Args:
         image: PIL Image to process
 
@@ -133,22 +137,32 @@ async def classify_text_in_image(image: Image.Image) -> tuple[str, float, int]:
     """
     global model
 
-    # For now, return a mock response since we don't have the trained model
-    # In a real implementation, this would:
-    # 1. Use the image_utils to extract digit structures
-    # 2. Pad and reshape each structure to match training data format
-    # 3. Use the Random Forest model to predict each digit
-    # 4. Sort by x-position and combine into final text
-
+    # Load model if not already loaded
     if model is None:
-        # Mock classification for demonstration
-        return "12345", 0.95, 5
+        try:
+            from pickle import load
+            with open('/work/decision_forest.pkl', 'rb') as f:
+                model = load(f)
+            print("✅ Random Forest model loaded successfully")
+        except Exception as e:
+            print(f"❌ Error loading model: {e}")
+            return "ERROR", 0.0, 0
 
     try:
-        from .image_utils import extract_digit_structures
+        # Import the actual image processing utilities
+        import sys
+        sys.path.append('/work')
+        from image_manipulate_utils import filter_rgb_color_range, find_connected_disjoint_structures
 
-        # Extract individual digit structures from the image
-        structures = extract_digit_structures(image)
+        # Convert image to numpy array and preprocess (following eval_forest.py exactly)
+        image_array = np.array(image.convert('RGB'))
+
+        # Apply the same color filtering as in eval_forest.py
+        filtered_image = filter_rgb_color_range(image_array, (160, 154, 157), (255, 255, 255))
+        binary_image = np.all(filtered_image != 0, -1)
+
+        # Find connected structures
+        structures = find_connected_disjoint_structures(binary_image)
 
         if not structures:
             return "", 0.0, 0
@@ -156,9 +170,11 @@ async def classify_text_in_image(image: Image.Image) -> tuple[str, float, int]:
         number_xpos_pairs: List[tuple[str, int]] = []
         confidences: List[float] = []
 
-        for box, symbol in structures:
-            # Pad the symbol to match training data dimensions (17x10)
-            X = np.pad(symbol, ((0, 17 - symbol.shape[0]), (0, 10 - symbol.shape[1])))
+        for symbol in structures:
+            box, symbol_image = symbol
+
+            # Pad the symbol to match training data dimensions (17x10) - exactly as in eval_forest.py
+            X = np.pad(symbol_image, ((0, 17 - symbol_image.shape[0]), (0, 10 - symbol_image.shape[1])))
             X_reshaped = X.reshape(1, -1)
 
             # Get prediction and confidence
@@ -166,28 +182,32 @@ async def classify_text_in_image(image: Image.Image) -> tuple[str, float, int]:
             probabilities = model.predict_proba(X_reshaped)[0]
             confidence = probabilities.max()
 
-            # Skip commas (class 10)
+            # Skip commas (class 10) - exactly as in eval_forest.py
             if prediction == 10:
                 continue
 
-            # Store digit and its x-position for sorting
-            number_xpos_pairs.append((str(prediction), box.left))
+            # Store digit and its x-position for sorting (using box.top as in eval_forest.py)
+            number_xpos_pairs.append((str(prediction), box.top))
             confidences.append(confidence)
 
-        # Sort by x-position (left to right)
+        # Sort by x-position (left to right) - exactly as in eval_forest.py
         number_xpos_pairs.sort(key=lambda p: p[1])
 
-        # Combine digits into final text
+        # Combine digits into final text - exactly as in eval_forest.py
         extracted_text = ''.join([p[0] for p in number_xpos_pairs])
 
         # Calculate average confidence
         avg_confidence = sum(confidences) / len(confidences) if confidences else 0.0
 
+        print(f"✅ Successfully classified: '{extracted_text}' with {len(number_xpos_pairs)} characters")
+
         return extracted_text, avg_confidence, len(number_xpos_pairs)
 
     except Exception as e:
-        print(f"Error in classification: {str(e)}")
-        # Return mock data on error
+        print(f"❌ Error in classification: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        # Return error indicator
         return "ERROR", 0.0, 0
 
 # Deploy the FastAPI app using Modal's ASGI app decorator
@@ -196,23 +216,19 @@ async def classify_text_in_image(image: Image.Image) -> tuple[str, float, int]:
 def fastapi_app():
     return web_app
 
-# Function to load the ML model (would be called on container startup)
+# Function to load the ML model (called on container startup)
 @app.function()
 def load_model():
     """Load the Random Forest model for digit classification."""
     global model
     try:
-        # In a real implementation, you would load the model from a file:
-        # from pickle import load
-        # with open('decision_forest.pkl', 'rb') as f:
-        #     model = load(f)
-
-        # For now, we'll create a mock model
-        print("Model loading would happen here...")
-        # model = None  # Set to None since we don't have the actual model file
-        return "Model loaded successfully"
+        from pickle import load
+        with open('/work/decision_forest.pkl', 'rb') as f:
+            model = load(f)
+        print("✅ Random Forest model loaded successfully in load_model function")
+        return f"Model loaded successfully: {type(model).__name__} with {model.n_estimators} estimators"
     except Exception as e:
-        print(f"Error loading model: {e}")
+        print(f"❌ Error loading model: {e}")
         return f"Error loading model: {e}"
 
 @app.local_entrypoint()
