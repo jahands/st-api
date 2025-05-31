@@ -5,8 +5,19 @@ from typing import Union, Dict, Any
 import math
 from datetime import datetime, timezone
 
-# Create Modal app with FastAPI image
-image = modal.Image.debian_slim().pip_install("fastapi[standard]>=0.100.0")
+# Create Modal app with uv-managed dependencies
+image = (
+    modal.Image.debian_slim()
+    .pip_install("uv")
+    .workdir("/work")
+    .copy_local_file("pyproject.toml", "/work/pyproject.toml")
+    .copy_local_file("uv.lock", "/work/uv.lock")
+    .env({"UV_PROJECT_ENVIRONMENT": "/usr/local"})
+    .run_commands([
+        "uv sync --frozen --compile-bytecode",
+        "uv build",
+    ])
+)
 app = modal.App("st-api", image=image)
 
 # Pydantic models for request/response validation
