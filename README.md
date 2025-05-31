@@ -18,18 +18,32 @@ just health-check          # Check API health
 just test-endpoints        # Test all endpoints
 ```
 
-### Production
+### Production (Modal)
 
 ```sh
 just deploy                 # Deploy to Modal
 just health-check-prod     # Check production health
 ```
 
+### Railway Deployment
+
+```sh
+# Local Docker testing
+just docker-build          # Build Docker image
+just docker-run            # Run locally with Docker
+just test-railway          # Test Railway API locally
+
+# Deploy to Railway.app
+just railway-deploy        # Deploy to Railway (requires Railway CLI)
+just railway-status        # Check deployment status
+```
+
 ## 📁 Project Structure
 
 ```
 ├── src/                    # Source code
-│   ├── main.py            # FastAPI application
+│   ├── main.py            # Modal FastAPI application
+│   ├── railway_main.py    # Railway FastAPI application
 │   ├── image_utils.py     # Image processing utilities
 │   └── image_manipulate_utils.py  # Core ML image processing
 ├── model/                  # Machine learning models
@@ -44,6 +58,8 @@ just health-check-prod     # Check production health
 │   └── create_test_image.py # Test image generator
 ├── reference/             # Reference implementations
 │   └── eval_forest.py     # Original classification script
+├── Dockerfile             # Railway deployment configuration
+├── .dockerignore          # Docker build optimization
 └── Justfile              # Development commands
 ```
 
@@ -99,12 +115,23 @@ just test-endpoints
 
 ## 🛠️ Development
 
+### Modal Deployment
+
 The API uses Modal for serverless deployment with:
 
 - FastAPI for the web framework
 - Random Forest model for digit classification
 - PIL/numpy for image processing
 - uv for dependency management
+
+### Railway Deployment
+
+The API can also be deployed to Railway.app using Docker with:
+
+- Containerized FastAPI application
+- Multi-stage Docker build with uv
+- Health checks and proper logging
+- Environment variable configuration
 
 ## 📈 Performance
 

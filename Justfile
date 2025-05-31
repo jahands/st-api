@@ -43,3 +43,53 @@ logs:
 # Stop the running Modal app
 stop:
   uv run modal app stop st-api
+
+# === Railway Deployment Commands ===
+
+# Build Docker image for Railway deployment
+docker-build:
+  docker build -t st-api-railway .
+
+# Run Railway API locally using Docker
+docker-run:
+  docker run -p 8000:8000 --rm st-api-railway
+
+# Run Railway API locally in background
+docker-run-bg:
+  docker run -d -p 8000:8000 --name st-api-railway-dev st-api-railway
+
+# Stop background Railway API container
+docker-stop:
+  docker stop st-api-railway-dev && docker rm st-api-railway-dev
+
+# Test Railway API locally (requires docker-run to be running)
+test-railway:
+  curl -f http://localhost:8000/health && echo "\n✅ Railway API health check passed"
+
+# Test Railway API endpoints locally
+test-railway-endpoints:
+  ./scripts/test-endpoints.sh "http://localhost:8000"
+
+# Build and run Railway API locally in background, then test
+railway-dev: docker-build docker-run-bg
+  sleep 3
+  just test-railway
+  echo "🚀 Railway API running at http://localhost:8000"
+  echo "📖 API docs at http://localhost:8000/docs"
+  echo "🛑 Stop with: just docker-stop"
+
+# Deploy to Railway (requires Railway CLI)
+railway-deploy:
+  railway up
+
+# Check Railway deployment status
+railway-status:
+  railway status
+
+# View Railway logs
+railway-logs:
+  railway logs
+
+# Open Railway dashboard
+railway-dashboard:
+  railway open
