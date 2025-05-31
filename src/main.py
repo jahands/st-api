@@ -14,8 +14,8 @@ image = (
     .workdir("/work")
     .add_local_file("pyproject.toml", "/work/pyproject.toml", copy=True)
     .add_local_file("uv.lock", "/work/uv.lock", copy=True)
-    .add_local_file("decision_forest.pkl", "/work/decision_forest.pkl", copy=True)
-    .add_local_file("image_manipulate_utils.py", "/work/image_manipulate_utils.py", copy=True)
+    .add_local_file("model/decision_forest.pkl", "/work/decision_forest.pkl", copy=True)
+    .add_local_file("src/image_manipulate_utils.py", "/work/image_manipulate_utils.py", copy=True)
     .env({"UV_PROJECT_ENVIRONMENT": "/usr/local"})
     .run_commands([
         "uv sync --frozen --compile-bytecode",

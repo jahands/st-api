@@ -38,7 +38,7 @@ def test_api_structure():
     print("\nTesting API structure...")
     try:
         # Import our main module
-        sys.path.insert(0, 'src')
+        sys.path.insert(0, '../src')
         import main
         
         print("✅ Main module imported successfully")

@@ -4,6 +4,9 @@ from PIL import Image
 from pickle import load
 from sklearn.ensemble import RandomForestClassifier
 
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'src'))
 from image_manipulate_utils import filter_rgb_color_range, find_connected_disjoint_structures
 # process arguments
 parser = ArgumentParser()
@@ -35,7 +38,8 @@ image = np.all(image != 0, -1)
 number_xpos_pairs: list[tuple[str, int]] = []
 
 # loading decision forest model
-with open('decision_forest.pkl', 'rb') as f:
+model_path = os.path.join(os.path.dirname(__file__), '..', 'model', 'decision_forest.pkl')
+with open(model_path, 'rb') as f:
     forest: RandomForestClassifier = load(f)
 
 for symbol in find_connected_disjoint_structures(image):

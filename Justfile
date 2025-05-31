@@ -14,7 +14,7 @@ dev:
 
 # Test the API endpoints locally (requires the API to be running)
 test-api:
-  uv run python test_api.py
+  cd scripts && uv run python test_api.py
 
 # Run a quick health check on the deployed API
 health-check:

@@ -47,9 +47,9 @@ echo "2. Testing health endpoint:"
 test_endpoint "Health" "GET" "$BASE_URL/health"
 
 echo "3. Testing image classification (requires image file):"
-if [ -f "image.png" ]; then
-    echo "Image Classification (with image.png):"
-    response=$(curl -s -X POST "$BASE_URL/classify" -F "file=@image.png")
+if [ -f "data/image.png" ]; then
+    echo "Image Classification (with data/image.png):"
+    response=$(curl -s -X POST "$BASE_URL/classify" -F "file=@data/image.png")
 
     if echo "$response" | grep -q "modal-http: app for invoked web endpoint is stopped"; then
         echo "❌ API is not running. Please start it with 'just dev' first."
@@ -59,8 +59,8 @@ if [ -f "image.png" ]; then
         echo "❌ Invalid JSON response: $response"
     fi
 else
-    echo "⚠️  No image.png file found. Skipping image classification test."
-    echo "   To test image classification, add an image.png file to the project root."
+    echo "⚠️  No data/image.png file found. Skipping image classification test."
+    echo "   To test image classification, add an image.png file to the data/ directory."
 fi
 echo
 
