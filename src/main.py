@@ -1,11 +1,10 @@
 import modal
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
-from typing import Dict, Any, List, Optional
+from typing import List
 import numpy as np
 from PIL import Image
 import io
-import base64
 from datetime import datetime, timezone
 
 # Create Modal app with uv-managed dependencies
