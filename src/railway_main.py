@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File
 from pydantic import BaseModel, Field
 from typing import List
+from contextlib import asynccontextmanager
 import numpy as np
 from PIL import Image
 import io
@@ -32,21 +33,13 @@ class ErrorResponse(BaseModel):
     detail: str
     timestamp: str
 
-# Create FastAPI app instance
-app = FastAPI(
-    title="Shop Titans Text Classification API",
-    description="API for extracting and classifying digits/text from images using Random Forest ML model",
-    version="1.0.0",
-    docs_url="/docs",
-    redoc_url="/redoc"
-)
-
 # Global variable to store the ML model (will be loaded on container startup)
 model = None
 
-@app.on_event("startup")
-async def startup_event():
-    """Load the ML model on application startup"""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application lifespan events"""
+    # Startup
     global model
     try:
         from pickle import load
@@ -54,13 +47,28 @@ async def startup_event():
         if not os.path.exists(model_path):
             # Fallback for local development
             model_path = "model/decision_forest.pkl"
-        
+
         with open(model_path, 'rb') as f:
             model = load(f)
         logger.info("✅ Random Forest model loaded successfully")
     except Exception as e:
         logger.error(f"❌ Error loading model: {e}")
         # Don't fail startup, but model will be None
+
+    yield
+
+    # Shutdown (cleanup if needed)
+    logger.info("🔄 Application shutting down")
+
+# Create FastAPI app instance
+app = FastAPI(
+    title="Shop Titans Text Classification API",
+    description="API for extracting and classifying digits/text from images using Random Forest ML model",
+    version="1.0.0",
+    docs_url="/docs",
+    redoc_url="/redoc",
+    lifespan=lifespan
+)
 
 @app.get("/")
 async def root():

@@ -27,16 +27,19 @@ just docker-stop
 ### Deploy to Railway
 
 1. **Login to Railway**
+
    ```bash
    railway login
    ```
 
 2. **Create a new project**
+
    ```bash
    railway new
    ```
 
 3. **Deploy your application**
+
    ```bash
    just railway-deploy
    ```
@@ -49,20 +52,21 @@ just docker-stop
 ## 📁 Railway Configuration Files
 
 - **`Dockerfile`** - Multi-stage Docker build with uv package manager
-- **`railway.toml`** - Railway deployment configuration
+- **`railway.json`** - Railway deployment configuration
 - **`.dockerignore`** - Optimizes Docker build by excluding unnecessary files
+- **`src/railway_main.py`** - Railway-specific FastAPI app with modern lifespan events
 
 ## 🔧 Available Commands
 
-| Command | Description |
-|---------|-------------|
-| `just docker-build` | Build Docker image locally |
-| `just railway-dev` | Build and run locally for testing |
-| `just docker-stop` | Stop local development container |
-| `just railway-deploy` | Deploy to Railway |
-| `just railway-status` | Check deployment status |
-| `just railway-logs` | View deployment logs |
-| `just railway-dashboard` | Open Railway dashboard |
+| Command                  | Description                       |
+| ------------------------ | --------------------------------- |
+| `just docker-build`      | Build Docker image locally        |
+| `just railway-dev`       | Build and run locally for testing |
+| `just docker-stop`       | Stop local development container  |
+| `just railway-deploy`    | Deploy to Railway                 |
+| `just railway-status`    | Check deployment status           |
+| `just railway-logs`      | View deployment logs              |
+| `just railway-dashboard` | Open Railway dashboard            |
 
 ## 🌐 API Endpoints
 
@@ -84,11 +88,13 @@ Once deployed, your API will be available at your Railway URL:
 ### Common Issues
 
 1. **Build Failures**
+
    - Check that all dependencies are in `pyproject.toml`
    - Ensure `model/decision_forest.pkl` exists
    - Verify Docker build works locally: `just docker-build`
 
 2. **Runtime Errors**
+
    - Check logs: `just railway-logs`
    - Verify health endpoint: `curl https://your-app.railway.app/health`
    - Ensure model file is properly copied in Dockerfile
@@ -100,6 +106,7 @@ Once deployed, your API will be available at your Railway URL:
 ### Environment Variables
 
 Railway automatically provides:
+
 - `PORT` - Port to listen on (usually 8000)
 - `PYTHONPATH` - Set to `/app` for proper imports
 
