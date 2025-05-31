@@ -1,6 +1,13 @@
+import modal
+
+app = modal.App("st-api")
+
+@app.function()
+def square(x):
+    print("This code is running on a remote worker!")
+    return x**2
+
+
+@app.local_entrypoint()
 def main():
-    print("Hello from st-api!")
-
-
-if __name__ == "__main__":
-    main()
+    print("the square is", square.remote(42))
