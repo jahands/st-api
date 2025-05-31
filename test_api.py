@@ -49,8 +49,8 @@ def test_api_structure():
             
             # Check routes
             routes = [route.path for route in main.web_app.routes]
-            expected_routes = ['/', '/health', '/square', '/square/{number}', '/calculate']
-            
+            expected_routes = ['/', '/health', '/classify']
+
             for route in expected_routes:
                 if any(route in r for r in routes):
                     print(f"✅ Route {route} found")
@@ -77,15 +77,25 @@ def test_pydantic_models():
     try:
         sys.path.insert(0, 'src')
         import main
-        
-        # Test SquareRequest
-        square_req = main.SquareRequest(number=5.0)
-        print(f"✅ SquareRequest model works: {square_req}")
-        
-        # Test CalculationRequest
-        calc_req = main.CalculationRequest(operation="add", a=5.0, b=3.0)
-        print(f"✅ CalculationRequest model works: {calc_req}")
-        
+
+        # Test ClassificationResponse
+        classification_resp = main.ClassificationResponse(
+            extracted_text="12345",
+            confidence=0.95,
+            num_characters=5,
+            processing_time_ms=150.5,
+            timestamp="2024-01-01T00:00:00Z"
+        )
+        print(f"✅ ClassificationResponse model works: {classification_resp.extracted_text}")
+
+        # Test HealthResponse
+        health_resp = main.HealthResponse(
+            status="healthy",
+            timestamp="2024-01-01T00:00:00Z",
+            model_loaded=True
+        )
+        print(f"✅ HealthResponse model works: {health_resp.status}")
+
         return True
     except Exception as e:
         print(f"❌ Pydantic models test failed: {e}")
@@ -108,10 +118,16 @@ def main():
         print()
     
     if all(results):
-        print("🎉 All tests passed! Your API structure is correct.")
+        print("🎉 All tests passed! Your image classification API structure is correct.")
         print("\nTo run your API:")
-        print("1. Run: uv run modal serve src/main.py")
-        print("2. Or deploy: uv run modal deploy src/main.py")
+        print("1. Development: just dev")
+        print("2. Deploy: just deploy")
+        print("3. Test endpoints: just test-endpoints")
+        print("4. Health check: just health-check")
+        print("\nAPI endpoints:")
+        print("- POST /classify - Upload image for text classification")
+        print("- GET /health - Health check")
+        print("- GET /docs - Interactive API documentation")
     else:
         print("❌ Some tests failed. Please check the errors above.")
         return 1

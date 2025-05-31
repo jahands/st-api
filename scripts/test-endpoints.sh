@@ -46,22 +46,22 @@ test_endpoint "Root" "GET" "$BASE_URL/" || exit 1
 echo "2. Testing health endpoint:"
 test_endpoint "Health" "GET" "$BASE_URL/health"
 
-echo "3. Testing square (GET):"
-test_endpoint "Square GET" "GET" "$BASE_URL/square/5"
+echo "3. Testing image classification (requires image file):"
+if [ -f "image.png" ]; then
+    echo "Image Classification (with image.png):"
+    response=$(curl -s -X POST "$BASE_URL/classify" -F "file=@image.png")
 
-echo "4. Testing square (POST):"
-test_endpoint "Square POST" "POST" "$BASE_URL/square" '{"number": 8}'
-
-echo "5. Testing calculator (addition):"
-test_endpoint "Calculator Add" "POST" "$BASE_URL/calculate" '{"operation": "add", "a": 15, "b": 25}'
-
-echo "6. Testing calculator (square root):"
-test_endpoint "Calculator Sqrt" "POST" "$BASE_URL/calculate" '{"operation": "sqrt", "a": 144}'
-
-echo "7. Testing calculator (power):"
-test_endpoint "Calculator Power" "POST" "$BASE_URL/calculate" '{"operation": "power", "a": 2, "b": 8}'
-
-echo "8. Testing calculator (divide):"
-test_endpoint "Calculator Divide" "POST" "$BASE_URL/calculate" '{"operation": "divide", "a": 100, "b": 4}'
+    if echo "$response" | grep -q "modal-http: app for invoked web endpoint is stopped"; then
+        echo "❌ API is not running. Please start it with 'just dev' first."
+    elif echo "$response" | python3 -c "import sys, json; json.load(sys.stdin)" 2>/dev/null; then
+        echo "$response" | python3 -m json.tool
+    else
+        echo "❌ Invalid JSON response: $response"
+    fi
+else
+    echo "⚠️  No image.png file found. Skipping image classification test."
+    echo "   To test image classification, add an image.png file to the project root."
+fi
+echo
 
 echo "✅ All tests completed successfully!"
